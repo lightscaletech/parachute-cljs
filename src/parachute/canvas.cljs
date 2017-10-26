@@ -1,26 +1,33 @@
 (ns parachute.canvas
   (:require [parachute.util :as u]))
 
+(defn resize [{:keys [canvas input] :as s}]
+  (if (:win-resize input)
+    (let [[w h] (u/get-window-size)]
+      (set! (.-width canvas) w)
+      (set! (.-height canvas) h)
+      (assoc s
+             :size {:w w :h h}
+             :input (assoc input :win-resize false)))
+    s))
 
-(defn resize [{:keys [canvas]}]
-  (let [[w h] (u/get-window-size)]
-    (set! (.-width canvas) w)
-    (set! (.-height canvas) h)
-    {:w w :h h}))
+
+(defn clear [{:keys [api size] :as s}]
+  (.clearRect api 0 0 (:w size) (:h size))
+  s)
 
 (defn process [s]
-  (if (:win-resize s)
-    (assoc s
-           :size (resize s)
-           :win-resize false)
-    s))
+  (-> s
+      resize
+      clear))
 
 (defn init [s]
   (let [c (.getElementById js/document "canvas")
         a (.getContext c "2d")]
-   (assoc s :canvas c :api a :size (resize s))))
+    (-> s
+        (assoc :canvas c :api a)
+        resize)))
 
-(defn clear [api]    (.clearRect api 0 0 0 0))
 (defn save [api]     (.save api))
 (defn restore [api] (.restore api))
 

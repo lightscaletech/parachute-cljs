@@ -11,6 +11,7 @@
 (defn frame [s]
   (-> s
       input/process
+      canvas/process
       game/process
       frame-loop))
 
