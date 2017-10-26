@@ -1,0 +1,7 @@
+(ns parachute.background
+  (:require [parachute.canvas :as can]
+            [parachute.layout :as lo]))
+
+(defn render []
+  (can/draw-rectangle 0 0 (can/gsize :w) (can/gsize :h) "#444")
+  (can/draw-rectangle @lo/start-x @lo/start-y (lo/cwidth) (lo/cheight) "#222"))

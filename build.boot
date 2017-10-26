@@ -15,7 +15,7 @@
 (deftask dev []
   (comp (watch)
         (speak)
-        (reload :on-jsload 'tetris.core/main)
+        (reload :on-jsload 'parachute.core/main)
         (cljs)
         (serve :port 8080 :dir "target-dev")
         (target :dir #{"target-dev"})))
