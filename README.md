@@ -1,9 +1,8 @@
-# tetris-cljs
-CLJS HTML Canvas implementation of Tertris.
+# Parachute CLJS
+CLJS HTML Canvas implementation of an old DOS game.
 
 ## Description
-This is a basic implementation of tetris written in clojurescript. You can play
-the build of this [here][lightscale-tetris].
+This is a basic implementation of a game written in clojurescript.
 
 ## Usage
 If you would like to build this for to work on it, it uses the
@@ -13,5 +12,4 @@ the project then run a simple webserver hosting the site at `localhost:8080`.
 
 Have fun!!!
 
-[lightscale-tetris]: https://lightscale.co.uk/tetris
 [boot-github]: https://github.com/boot-clj/boot
