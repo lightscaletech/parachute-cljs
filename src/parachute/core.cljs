@@ -1,18 +1,22 @@
 (ns parachute.core
-  (:require [parachute.canvas :as canvas]
-            [parachute.sidebar :as sidebar]
-            [parachute.layout :as lo]
+  (:require [parachute.state :as state]
+            [parachute.canvas :as canvas]
             [parachute.game :as game]
-            [parachute.input :as input]))
+            [parachute.input :as input]
+            [parachute.pause-modal :as pause]))
 
-(defn resize []
-  (canvas/resize)
-  (lo/resize)
-  (sidebar/resize))
+(declare frame)
+(defn frame-loop [s] (.requestAnimationFrame js/window #(frame s)))
+
+(defn frame [s]
+  (-> s
+      input/process
+      game/process
+      frame-loop))
 
 (defn ^:export main []
-  (.addEventListener js/window "resize" resize true)
-  (canvas/init)
-  (lo/resize)
-  (input/init)
-  (game/start))
+  (-> (state/init)
+      canvas/init
+      input/init
+      game/init
+      frame-loop))

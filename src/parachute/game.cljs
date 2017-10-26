@@ -1,35 +1,9 @@
 (ns parachute.game
-  (:require [parachute.canvas :as canvas]
-            [parachute.state :as state]
-            [parachute.background :as bg]
-            [parachute.grid :as grid]
-            [parachute.sidebar :as sidebar]
-            [parachute.gameover :as gameover]
-            [parachute.startgame :as startgame]
-            [parachute.pause-modal :as pause]))
+  (:require [parachute.canvas :as canvas]))
 
-(declare frame)
-(defn frame-loop [] (.requestAnimationFrame js/window frame))
+(defn init [s]
+  s)
 
-(defn render-game []
-  (grid/render)
-  (sidebar/render)
-  (pause/render))
+(defn deinit [])
 
-(defn frame []
-  (canvas/clear)
-  (canvas/save)
-
-  (bg/render)
-  (condp = @state/game-state
-    :start (startgame/render)
-    :game (render-game)
-    :gameover (gameover/render))
-
-  (canvas/restore)
-  (frame-loop))
-
-(defn start []
-  (pause/init)
-  (state/startscreen)
-  (frame-loop))
+(defn process [s] s)

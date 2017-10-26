@@ -1,56 +1,45 @@
-(ns parachute.canvas)
+(ns parachute.canvas
+  (:require [parachute.util :as u]))
 
-(def obj-api    (atom nil))
-(def obj-canvas (atom nil))
-(def size       (atom {:w 0 :h 0}))
 
-(defn canvas [] @obj-canvas)
-(defn api [] @obj-api)
+(defn resize [{:keys [canvas]}]
+  (let [[w h] (u/get-window-size)]
+    (set! (.-width canvas) w)
+    (set! (.-height canvas) h)
+    {:w w :h h}))
 
-(defn get-window-size []
-  (let [w (.-innerWidth js/window)
-        h (.-innerHeight js/window)]
-    [w h]))
+(defn process [s]
+  (if (:win-resize s)
+    (assoc s
+           :size (resize s)
+           :win-resize false)
+    s))
 
-(defn set-size [w h] (reset! size {:w w :h h}))
+(defn init [s]
+  (let [c (.getElementById js/document "canvas")
+        a (.getContext c "2d")]
+   (assoc s :canvas c :api a :size (resize s))))
 
-(defn gsize
-  ([] @size)
-  ([k] (k @size)))
+(defn clear [api]    (.clearRect api 0 0 0 0))
+(defn save [api]     (.save api))
+(defn restore [api] (.restore api))
 
-(defn resize
-  ([] (resize nil))
-  ([ev]
-   (let [[w h] (get-window-size)]
-     (set-size w h)
-     (set! (.-width (canvas)) w)
-     (set! (.-height (canvas)) h))))
+(defn draw-rectangle [api x y w h c]
+  (save api)
+  (set! (.-fillStyle api) c)
+  (.fillRect api x y w h)
+  (restore api))
 
-(defn init []
-  (reset! obj-canvas (.getElementById js/document "canvas"))
-  (reset! obj-api    (.getContext (canvas) "2d"))
-  (resize))
+(defn draw-stroke-rectangle [api x y w h c s]
+  (save api)
+  (set! (.-strokeStyle api) c)
+  (set! (.-lineWidth api) s)
+  (.strokeRect api x y w h)
+  (restore api))
 
-(defn clear []    (.clearRect (api) 0 0 (gsize :w) (gsize :h)))
-(defn save []     (.save (api)))
-(defn restore  [] (.restore (api)))
-
-(defn draw-rectangle [x y w h c]
-  (save)
-  (set! (.-fillStyle (api)) c)
-  (.fillRect (api) x y w h)
-  (restore))
-
-(defn draw-stroke-rectangle [x y w h c s]
-  (save)
-  (set! (.-strokeStyle (api)) c)
-  (set! (.-lineWidth (api)) s)
-  (.strokeRect (api) x y w h)
-  (restore))
-
-(defn draw-text [text s x y c]
-  (save)
-  (set! (.-font (api)) (str s "px arial"))
-  (set! (.-fillStyle (api)) c)
-  (.fillText (api) text x (- y (/ s 2)))
-  (restore))
+(defn draw-text [api text s x y c]
+  (save api)
+  (set! (.-font api) (str s "px arial"))
+  (set! (.-fillStyle api) c)
+  (.fillText api text x (- y (/ s 2)))
+  (restore api))
