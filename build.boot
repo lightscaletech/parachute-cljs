@@ -3,7 +3,7 @@
  :resource-paths #{"resources"}
  :dependencies '[[adzerk/boot-cljs "2.0.0"]
                  [org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.495"]
+                 [org.clojure/clojurescript "1.9.946"]
                  [adzerk/boot-reload "0.5.1"]
                  [org.clojure/tools.nrepl "0.2.12"]
                  [pandeiro/boot-http "0.7.6"]])

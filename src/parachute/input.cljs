@@ -65,6 +65,7 @@
 
 (defn init [s]
   (on-win "resize"     win-resize)
+  (on-win "orientationchange" win-resize)
   (on-bod "keydown"    key-down)
   (on-bod "keyup"      key-up)
   (on-bod "mousemove"  mouse-move)

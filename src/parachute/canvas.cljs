@@ -1,14 +1,16 @@
 (ns parachute.canvas
-  (:require [parachute.util :as u]))
+  (:require [parachute.util :as u]
+            [parachute.layout :as layout]))
 
 (defn resize [{:keys [canvas input] :as s}]
   (if (:win-resize input)
     (let [[w h] (u/get-window-size)]
       (set! (.-width canvas) w)
       (set! (.-height canvas) h)
-      (assoc s
-             :size {:w w :h h}
-             :input (assoc input :win-resize false)))
+      (-> s
+          (assoc :size {:w w :h h}
+                 :input (assoc input :win-resize false))
+          layout/process))
     s))
 
 

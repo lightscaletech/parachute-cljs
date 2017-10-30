@@ -1,9 +1,14 @@
 (ns parachute.game
-  (:require [parachute.canvas :as canvas]))
+  (:require [parachute.canvas :as canvas]
+            [parachute.background :as bg]
+
+            [parachute.game.gun :as gun]))
 
 (defn init [s]
-  s)
+  (-> s
+      gun/init))
 
-(defn deinit [])
-
-(defn process [s] s)
+(defn process [s]
+  (-> s
+      bg/render
+      gun/render))
