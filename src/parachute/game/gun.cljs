@@ -10,6 +10,9 @@
 (def barrel-w 0.5)
 (def barrel-h 2.5)
 
+(def speed 0.2)
+(def max-angle 90)
+
 (def pos-x (- 50 (/ base-w 2)))
 (def pos-y (- 100 base-h))
 
@@ -19,10 +22,11 @@
 (defn barrel
   [{:keys [cen-x turret-top]}
    {api :api
-    {{w :w h :h} :inner-size} :layout}]
+    {{w :w h :h} :inner-size} :layout
+    {ang :angle} :gun}]
   (can/save api)
   (.translate api (- cen-x (lo/cent w (/ barrel-w 2))) turret-top)
-  (.rotate api (m/deg->rad 90))
+  (.rotate api (m/deg->rad ang))
   (let [radius (lo/cent w turret-w)]
     (can/draw-rectangle
      api
@@ -77,10 +81,25 @@
      "#FFF")
     {:cen-x cen-x :base-top base-top}))
 
+(defn max-angle-calc [ang add]
+  (let [n (+ ang add)]
+    (if (or (< n (* max-angle -1))
+            (> n max-angle))
+      ang
+      n)))
+
 (defn control [{{td :diff} :time
                 {ang :angle} :gun
+                {{kl :left kr :right} :key} :input
                 :as s}]
-  s)
+  (assoc-in
+   s [:gun :angle]
+   (max-angle-calc
+    ang
+    (cond
+      kl (* td speed -1)
+      kr (* td speed)
+      :else 0))))
 
 (defn render [s]
   (let [ns (control s)]
