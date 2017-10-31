@@ -20,7 +20,7 @@
   (assoc s :gun {:angle 0}))
 
 (defn barrel
-  [{:keys [cen-x turret-top]}
+  [{:keys [cen-x turret-top] :as r}
    {api :api
     {{w :w h :h} :inner-size} :layout
     {ang :angle} :gun}]
@@ -31,8 +31,9 @@
     (can/draw-rectangle
      api
      0 (* radius -1)
-     (lo/cent w barrel-w) (lo/cent h barrel-h) "#FFF"))
-  (can/restore api))
+     (lo/cent w barrel-w) (lo/cent h barrel-h) "#FFF")
+    (can/restore api)
+    (assoc r :radius radius :angle ang)))
 
 (defn turret-hat
   [{:keys [cen-x turret-top] :as r}
@@ -102,10 +103,10 @@
       :else 0))))
 
 (defn render [s]
-  (let [ns (control s)]
-    (-> ns
-        base
-        (turret ns)
-        (turret-hat ns)
-        (barrel ns))
-    ns))
+  (let [ns (control s)
+        res (-> ns
+                base
+                (turret ns)
+                (turret-hat ns)
+                (barrel ns))]
+    (assoc ns :gun res)))

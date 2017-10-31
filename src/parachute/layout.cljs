@@ -58,6 +58,6 @@
 (defn top [{{y :y} :inner-pos}] y)
 (defn bottom [{{h :h} :inner-size {y :y} :inner-pos}] (+ h y))
 (defn left [{{x :x} :inner-pos}] x)
-(defn right [{{x :x} :inner-pos {w :w} :inner-size}] (+ w) x)
+(defn right [{{x :x} :inner-pos {w :w} :inner-size}] (+ w x))
 (defn center-x [{{w :w} :inner-size}] (/ w 2))
 (defn center-y [{{h :h} :inner-size}] (/ h 2))
