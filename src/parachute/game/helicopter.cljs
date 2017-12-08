@@ -3,7 +3,11 @@
             [parachute.layout :as lo]
             [parachute.math :as m]
             [parachute.util :as u]
-            [parachute.time :as time]))
+            [parachute.time :as t]
+            [parachute.sprite-utils :as su]
+
+            [parachute.game.gun :as gun]
+            [parachute.game.troop.details :as troop]))
 
 (def min-time (* 0.5 1000))
 (def max-time (* 4   1000))
@@ -14,28 +18,45 @@
 (def width   5)
 (def height  4)
 
+(def get-square (partial su/get-square width height))
+
 (def speed 0.02)
 
-(def directions [:left :right])
-(def direction-fn {:left -
-                   :right +})
+(def min-troop-pos 7)
+(def max-troop-pos 93)
+(def exclude-troop-pos {:left (- 50 troop/width (/ gun/base-w 1.5))
+                        :right (+ 50 (/ gun/base-w 1.5))})
+(def troop-probability 0.75)
 
-(defn get-next-time []
-  (+ (time/now)
-     (u/random-int min-time max-time)))
+(def directions [:left :right])
+(def direction-fn {:left - :right +})
+
+(defn get-time [min max] (+ (t/now) (u/random-int min max)))
+(defn get-next-time [] (get-time min-time max-time))
 
 (defn init [s]
   (assoc
    s
    :helicopters {:items [] :next (get-next-time)}))
 
+(defn troop-pos []
+  (let [p (u/random min-troop-pos max-troop-pos)
+        {exl :left exr :right} exclude-troop-pos]
+    (cond
+      (and (<= exl p) (>= 50 p)) exl
+      (and (<  50 p) (>= exr p)) exr
+      :else p)))
+
+(defn decide-troop [] (< (rand) troop-probability))
 (defn choose-direction [] (rand-nth directions))
 
 (defn make []
   (let [dir (choose-direction)
         x (if (= dir :right) (- 0 width) 100)
         y (u/random min-pos max-pos)]
-    {:x x :y y :direction dir}))
+    {:x x :y y :direction dir
+     :has-troop (decide-troop)
+     :troop-pos (troop-pos)}))
 
 (defn launch
   [{{now :now} :time
@@ -46,18 +67,6 @@
            {:items (conj items (make))
             :next (get-next-time)})
     s))
-
-(defn get-square
-  [{{w :w h :h} :inner-size
-    :as layout}
-   {:keys [x y]}]
-  (let [left (+ (lo/left layout) (lo/cent w x))
-        top (+ (lo/top layout) (lo/cent h y))
-        right (+ left (lo/cent w width))
-        bottom (+ top (lo/cent h height))]
-    {:left left :right right :top top :bottom bottom}))
-
-(defn drop-troop [s] s)
 
 (defn move
   [{{heli :items} :helicopters
@@ -109,7 +118,6 @@
 (defn process [s]
   (-> s
       launch
-      drop-troop
       move
       border-collisions
       render))

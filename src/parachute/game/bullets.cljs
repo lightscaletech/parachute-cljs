@@ -3,7 +3,10 @@
             [parachute.layout :as lo]
             [parachute.math :as m]
             [parachute.util :as u]
-            [parachute.game.helicopter :as helicopter]))
+
+            [parachute.game.helicopter :as helicopter]
+            [parachute.game.troop.details :as troop]
+            [parachute.game.troop.chute :as chute]))
 
 (def width  0.45)
 (def height 0.7)
@@ -81,38 +84,52 @@
   (let [reducer (partial border-collisions-reducer gun layout)]
     (assoc-in s [:bullets :items] (keep reducer bullets))))
 
-(defn helicopter-coll-reducer
-  [{layout :layout} {:keys [x y]} heli]
-  (let [{:keys [top left right bottom]} (helicopter/get-square layout heli)]
-    (when-not (and (> y top) (< y bottom)
-                   (> x left) (< x right))
-      heli)))
-
-(defn helicopter-bull-coll-reducer
-  [{gun :gun layout :layout :as s}
-   [bullets helis] k v]
+(defn bull-coll-reducer
+  [{gun :gun layout :layout} ireducer count-fn
+   [bullets items] k v]
   (let [bpos (get-position gun layout v)
-        reducer (partial helicopter-coll-reducer s bpos)
-        pre-hc (count helis)
-        nhelis (keep reducer helis)
-        post-hc (count nhelis)
-        nbullets (if (> pre-hc post-hc) (u/dissocv (vec bullets) k) bullets)]
-    [nbullets nhelis]))
+        reducer (partial ireducer layout bpos)
+        pre-tc (count-fn items)
+        nitems (keep reducer items)
+        post-tc (count-fn nitems)
+        nbullets (if (> pre-tc post-tc) (u/dissocv (vec bullets) k) bullets)]
+    [nbullets nitems]))
 
-(defn helicopter-collisions
-  [{{helis :items} :helicopters
-    {bullets :items} :bullets
-    :as s}]
-  (let [reducer (partial helicopter-bull-coll-reducer s)
-        [nbullets nhelis] (reduce-kv reducer [bullets helis] (vec bullets))]
-    (-> s
+(defn bull-collisions
+  ([s ipath ireducer] (bull-collisions s ipath ireducer count))
+  ([{{bullets :items} :bullets
+     :as s} ipath ireducer count-fn]
+   (let [items (get-in s ipath)
+         reducer (partial bull-coll-reducer s ireducer count-fn)
+         [nbullets nitems] (reduce-kv reducer [bullets items] (vec bullets))]
+     (-> s
          (assoc-in [:bullets :items] nbullets)
-         (assoc-in [:helicopters :items] nhelis))))
+         (assoc-in ipath nitems)))))
+
+(defn make-bull-coll-reducer [square-fn]
+  (fn [layout {:keys [x y]} item]
+    (let [{:keys [top left right bottom]} (square-fn layout item)]
+      (when-not (and (> y top) (< y bottom) (> x left) (< x right))
+        item))))
+
+(def heli-coll (make-bull-coll-reducer helicopter/get-square))
+(def troop-coll (make-bull-coll-reducer troop/get-square))
+(defn chute-coll
+  [layout {:keys [x y]}
+   {{status :status} :chute :as item}]
+  (let [{:keys [top left right bottom]} (chute/get-square layout item)]
+    (if (and (= status :deployed) (> y top) (< y bottom) (> x left) (< x right))
+      (assoc-in item [:chute :status] :hit)
+      item)))
 
 (defn process [s]
   (-> s
       control
       move
       border-collisions
-      helicopter-collisions
+      (bull-collisions [:helicopters :items] heli-coll)
+      (bull-collisions [:troops :items] troop-coll)
+      (bull-collisions [:troops :items] chute-coll
+                       #(reduce (fn [r {{status :status} :chute}]
+                                  (if (not= status :hit) (inc r) r)) 0 %))
       render))

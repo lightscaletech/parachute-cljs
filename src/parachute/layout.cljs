@@ -21,7 +21,7 @@
             {:w (* wh w-ratio) :h wh})]
     (assoc-in s [:layout :size] ls)))
 
-(defn cent [t p] (m/floor (* t (/ p 100))))
+(defn cent [t p] (->> p (m/pcent t) m/floor))
 
 (defn make-padding [{{{sw :w sh :h} :size} :layout
                     :as s}]

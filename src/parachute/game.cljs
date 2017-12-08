@@ -5,16 +5,14 @@
             [parachute.game.gun :as gun]
             [parachute.game.bullets :as bullets]
             [parachute.game.helicopter :as helicopter]
-            [parachute.game.troop :as troop]
-            [parachute.game.chute :as chute]))
+            [parachute.game.troop :as troop]))
 
 (defn init [s]
   (-> s
       gun/init
       bullets/init
       helicopter/init
-      troop/init
-      chute/init))
+      troop/init))
 
 (defn process [s]
   (-> s
@@ -22,5 +20,4 @@
       gun/render
       bullets/process
       helicopter/process
-      troop/process
-      chute/process))
+      troop/process))
