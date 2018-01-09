@@ -4,6 +4,7 @@
             [parachute.math :as m]
             [parachute.util :as u]
 
+            [parachute.game.score :as score]
             [parachute.game.helicopter :as helicopter]
             [parachute.game.troop.details :as troop]
             [parachute.game.troop.chute :as chute]))
@@ -23,7 +24,9 @@
     :as s}]
   (cond
     (and ksp ready)
-    (assoc s :bullets {:items (conj bullets (make ang)) :ready false})
+    (-> s
+        (assoc :bullets {:items (conj bullets (make ang)) :ready false})
+        score/decriment)
     (and (not ksp) (not ready)) (assoc-in s [:bullets :ready] true)
     :else s))
 
@@ -96,13 +99,14 @@
     [nbullets nitems]))
 
 (defn bull-collisions
-  ([s ipath ireducer] (bull-collisions s ipath ireducer count))
+  ([s ipath ireducer sc] (bull-collisions s ipath ireducer sc count))
   ([{{bullets :items} :bullets
-     :as s} ipath ireducer count-fn]
+     :as s} ipath ireducer sc count-fn]
    (let [items (get-in s ipath)
          reducer (partial bull-coll-reducer s ireducer count-fn)
-         [nbullets nitems] (reduce-kv reducer [bullets items] (vec bullets))]
-     (-> s
+         [nbullets nitems] (reduce-kv reducer [bullets items] (vec bullets))
+         tsc (* (- (count-fn items) (count-fn nitems)) sc)]
+     (-> (if (zero? tsc) s (score/add s tsc))
          (assoc-in [:bullets :items] nbullets)
          (assoc-in ipath nitems)))))
 
@@ -127,9 +131,9 @@
       control
       move
       border-collisions
-      (bull-collisions [:helicopters :items] heli-coll)
-      (bull-collisions [:troops :items] troop-coll)
-      (bull-collisions [:troops :items] chute-coll
+      (bull-collisions [:helicopters :items] heli-coll 15)
+      (bull-collisions [:troops :items] troop-coll 10)
+      (bull-collisions [:troops :items] chute-coll 5
                        #(reduce (fn [r {{status :status} :chute}]
                                   (if (not= status :hit) (inc r) r)) 0 %))
       render))
