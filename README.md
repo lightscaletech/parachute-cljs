@@ -1,8 +1,7 @@
+<<<<<<< HEAD
 # Parachute CLJS
-CLJS HTML Canvas implementation of an old DOS game.
 
-## Description
-This is a basic implementation of a game written in clojurescript.
+A cljs version of the paratrooper game
 
 ## Usage
 If you would like to build this for to work on it, it uses the
