@@ -3,6 +3,6 @@
 
 (def width 1.5)
 (def height 2.5)
-(def speed 0.015)
+(def speed 0.02)
 
 (def get-square (partial su/get-square width height))
