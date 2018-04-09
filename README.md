@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Parachute CLJS
 
 A cljs version of the paratrooper game
